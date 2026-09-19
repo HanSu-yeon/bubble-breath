@@ -32,3 +32,37 @@ canvas {
   height: 100%;
   touch-action: none;
 }
+
+.microphone-controls {
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(90%, 380px);
+  text-align: center;
+  color: #fff;
+  font: 13px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.microphone-controls p {
+  margin: 0 0 10px;
+  text-shadow: 0 1px 8px #000;
+}
+
+.microphone-controls button {
+  border: 1px solid #ffffff40;
+  border-radius: 24px;
+  padding: 9px 18px;
+  background: #202033b3;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.microphone-controls button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+
+.microphone-controls button:disabled { opacity: 0.6; cursor: wait; }

@@ -20,7 +20,7 @@ export const defaultWandStyle: WandStyle = {
   color: "#e9e4da",
   colorLight: "#ffffff",
   colorShadow: "#bdb6aa",
-  handleLength: 34,
+  handleLength: 200,
   handleWidth: 18,
 };
 
@@ -47,8 +47,12 @@ export function drawWand(
   // Handle stub: attaches at the bottom of the ring and runs off the
   // bottom edge of the screen, so only a short connector is ever visible.
   const hw = handleWidth / 2;
-  const handleTopY = cy + ringRadius * 0.5;
-  ctx.fillStyle = style.colorShadow;
+  const handleTopY = cy + ringRadius;
+  const handleGradient = ctx.createLinearGradient(cx - hw, 0, cx + hw, 0);
+  handleGradient.addColorStop(0, style.colorShadow);
+  handleGradient.addColorStop(0.4, style.colorLight);
+  handleGradient.addColorStop(1, style.color);
+  ctx.fillStyle = handleGradient;
   ctx.beginPath();
   ctx.moveTo(cx - hw, handleTopY);
   ctx.lineTo(cx - hw * 0.7, handleTopY + handleLength);

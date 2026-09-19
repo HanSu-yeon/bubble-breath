@@ -26,6 +26,24 @@ interface Keyframe {
 // interpolation does the rest.
 const KEYFRAMES: Keyframe[] = [
   {
+    hour: 0,
+    topColor: [27, 30, 49],
+    bottomColor: [59, 55, 81],
+    cloudOpacity: 0.035,
+    starOpacity: 0.9,
+    lightChance: 0.45,
+    citySilhouetteDarkness: 0.95,
+  },
+  {
+    hour: 4,
+    topColor: [31, 34, 56],
+    bottomColor: [65, 61, 88],
+    cloudOpacity: 0.04,
+    starOpacity: 0.75,
+    lightChance: 0.3,
+    citySilhouetteDarkness: 0.9,
+  },
+  {
     hour: 5,
     topColor: [58, 52, 96],
     bottomColor: [206, 150, 168],
@@ -36,8 +54,8 @@ const KEYFRAMES: Keyframe[] = [
   },
   {
     hour: 7,
-    topColor: [104, 172, 232],
-    bottomColor: [206, 230, 246],
+    topColor: [126, 173, 201],
+    bottomColor: [239, 221, 202],
     cloudOpacity: 0.32,
     starOpacity: 0,
     lightChance: 0.05,
@@ -45,8 +63,8 @@ const KEYFRAMES: Keyframe[] = [
   },
   {
     hour: 11,
-    topColor: [66, 148, 234],
-    bottomColor: [168, 214, 249],
+    topColor: [113, 165, 195],
+    bottomColor: [214, 227, 222],
     cloudOpacity: 0.38,
     starOpacity: 0,
     lightChance: 0,
@@ -54,8 +72,8 @@ const KEYFRAMES: Keyframe[] = [
   },
   {
     hour: 16,
-    topColor: [88, 150, 210],
-    bottomColor: [248, 198, 138],
+    topColor: [135, 157, 190],
+    bottomColor: [245, 209, 173],
     cloudOpacity: 0.32,
     starOpacity: 0,
     lightChance: 0,
@@ -63,8 +81,8 @@ const KEYFRAMES: Keyframe[] = [
   },
   {
     hour: 18.5,
-    topColor: [58, 66, 118],
-    bottomColor: [252, 144, 104],
+    topColor: [100, 91, 144],
+    bottomColor: [241, 170, 142],
     cloudOpacity: 0.22,
     starOpacity: 0.05,
     lightChance: 0.3,
@@ -72,10 +90,10 @@ const KEYFRAMES: Keyframe[] = [
   },
   {
     hour: 20,
-    topColor: [10, 14, 34],
-    bottomColor: [24, 30, 58],
+    topColor: [32, 33, 55],
+    bottomColor: [81, 66, 96],
     cloudOpacity: 0.08,
-    starOpacity: 0.5,
+    starOpacity: 0.85,
     lightChance: 0.55,
     citySilhouetteDarkness: 0.95,
   },

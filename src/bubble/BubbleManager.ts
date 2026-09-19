@@ -11,15 +11,17 @@ export class BubbleManager {
 
   private wandX: number;
   private wandY: number;
+  private ringRadius = 62;
+  private maxRadius: number = tuning.bubbleMaxRadius;
   private timeSec = 0;
-  private overinflateTension = 0; // 0..1, ramps while blowing at max radius
+  private releaseHoldMs = 0;
+  private burstHoldMs = 0;
+  onBurst: (() => void) | null = null;
 
   /** Fires once when a bubble successfully detaches from the ring. */
   onDetach: (() => void) | null = null;
   /** Fires once when a floating bubble is popped by touch. */
   onPop: (() => void) | null = null;
-  /** Fires once when an attached bubble bursts from being overinflated. */
-  onBurst: (() => void) | null = null;
 
   constructor(wandX: number, wandY: number) {
     this.wandX = wandX;
@@ -27,9 +29,14 @@ export class BubbleManager {
     this.attached = createAttachedBubble(wandX, wandY, tuning.bubbleMinRadius);
   }
 
-  setWandPosition(x: number, y: number) {
+  setWandPosition(x: number, y: number, ringRadius = 62, maxRadius: number = tuning.bubbleMaxRadius) {
     this.wandX = x;
     this.wandY = y;
+    this.ringRadius = ringRadius;
+    this.maxRadius = maxRadius;
+    this.attached.radius = Math.min(this.attached.radius, maxRadius);
+    this.attached.targetRadius = Math.min(this.attached.targetRadius, maxRadius);
+    this.updateAttached(0, 0);
   }
 
   update(dtMs: number, breathStrength: number) {
@@ -46,63 +53,53 @@ export class BubbleManager {
     const blowing = breathStrength > BREATH_ACTIVE_THRESHOLD;
 
     // Growth only advances while actively blowing. Pausing holds the
-    // current size exactly — no shrinking, no auto-detach. Blowing again
+    // current size until it reaches the automatic release size. Blowing again
     // resumes from here, so a bubble can be built up over several breaths.
     if (blowing) {
       a.targetRadius = Math.min(
-        tuning.bubbleMaxRadius,
-        a.targetRadius + breathStrength * tuning.growthRate * dt
+        this.maxRadius,
+        a.targetRadius + breathStrength * (this.maxRadius - tuning.bubbleMinRadius) / tuning.inflationSeconds * dt
       );
     }
     a.radius += (a.targetRadius - a.radius) * tuning.radiusSmoothing;
 
-    // Overinflate burst: continuing to blow after the body is already at
-    // max size risks a playful accidental pop, right there on the pipe.
-    // Pausing at max size is always safe — tension only builds while
-    // actively blowing, and fades quickly once you stop.
-    const atMax = a.radius >= tuning.bubbleMaxRadius - 0.5;
-    if (blowing && atMax) {
-      this.overinflateTension = Math.min(1, this.overinflateTension + dt / tuning.overinflateTensionRamp);
-      if (Math.random() < tuning.overinflatePopChancePerSecond * dt) {
-        this.burstAttached();
-        return;
-      }
-    } else {
-      this.overinflateTension = Math.max(0, this.overinflateTension - dt / tuning.overinflateTensionRelax);
-    }
-
-    // Body position: centered on the ring, bulging toward the camera as it
-    // grows rather than rising above the wand like a balloon — plus a
-    // small idle jiggle so a paused bubble still feels alive. The jiggle
-    // grows more pronounced as overinflate tension builds, as a warning
-    // tell before it bursts.
-    const wobbleBoost = 1 + this.overinflateTension * tuning.overinflateWobbleBoost;
+    // Lift the body as it grows, keeping its lower neck at the wand.
     const wobble =
       Math.sin(this.timeSec * tuning.wobbleSpeed + a.wobbleSeed) * 0.6 +
       Math.sin(this.timeSec * tuning.wobbleSpeed * 1.7 + a.wobbleSeed) * 0.4;
-    const jitterX = wobble * tuning.wobbleAmountAttached * wobbleBoost * a.radius * 1.5;
+    const tension = this.burstHoldMs / tuning.burstHoldMs;
+    const shake = 1 + tension * tuning.burstWobbleBoost;
+    const jitterX = (wobble + Math.sin(this.timeSec * 35) * tension) * tuning.wobbleAmountAttached * a.radius * 1.5 * shake;
     const jitterY =
       Math.sin(this.timeSec * tuning.wobbleSpeed * 0.8 + a.wobbleSeed * 1.4) *
       tuning.wobbleAmountAttached *
-      wobbleBoost *
       a.radius *
-      1.5;
+      1.5 * shake;
 
     a.x = this.wandX + jitterX;
-    a.y = this.wandY + jitterY;
+    a.y = this.wandY - this.ringRadius * 0.8 - a.radius * 1.02 + jitterY;
+    const releaseRadius = Math.max(tuning.detachMinRadius,
+      this.maxRadius * tuning.autoReleaseRatio);
+    if (dt > 0) {
+      const large = a.radius >= releaseRadius;
+      const strong = breathStrength >= tuning.burstBreathStrength;
+      this.burstHoldMs = large && strong ? this.burstHoldMs + dt * 1000 : 0;
+      this.releaseHoldMs = large && !strong ? this.releaseHoldMs + dt * 1000 : 0;
+      if (this.burstHoldMs >= tuning.burstHoldMs) this.burstAttached();
+      else if (this.releaseHoldMs >= tuning.autoReleaseHoldMs) this.detachAttached(0, tuning.autoReleaseLift);
+    }
   }
 
-  /** Bursts the currently attached bubble in place (overinflate accident). */
   private burstAttached() {
-    const a = this.attached;
-    a.state = "popped";
-    a.poppedAt = performance.now();
-    this.floating.push(a);
-    this.particles.push(...spawnPopParticles(a.x, a.y, tuning.overinflateParticleCount));
+    const bubble = this.attached;
+    bubble.state = "popped";
+    bubble.poppedAt = performance.now();
+    this.floating.push(bubble);
+    this.particles.push(...spawnPopParticles(bubble.x, bubble.y, tuning.popParticleCount * 2));
     this.onBurst?.();
-
     this.attached = createAttachedBubble(this.wandX, this.wandY, tuning.bubbleMinRadius);
-    this.overinflateTension = 0;
+    this.releaseHoldMs = this.burstHoldMs = 0;
+    this.updateAttached(0, 0);
     this.enforceMaxCount();
   }
 
@@ -133,12 +130,7 @@ export class BubbleManager {
     }
   }
 
-  /**
-   * The only way a bubble detaches: an explicit upward swipe on the held
-   * bubble releases it from the ring and flings it free. Breath stopping
-   * never detaches on its own. Returns false if there isn't enough of a
-   * bubble yet for the gesture to do anything.
-   */
+  /** Release automatically at size, or earlier with an upward swipe. */
   detachAttached(flingVx: number, flingBoost: number): boolean {
     const a = this.attached;
     if (a.radius < tuning.detachMinRadius) return false;
@@ -149,6 +141,8 @@ export class BubbleManager {
     this.onDetach?.();
 
     this.attached = createAttachedBubble(this.wandX, this.wandY, tuning.bubbleMinRadius);
+    this.releaseHoldMs = this.burstHoldMs = 0;
+    this.updateAttached(0, 0);
     this.enforceMaxCount();
     return true;
   }

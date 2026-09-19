@@ -1,8 +1,4 @@
-// Fake breath input for Phase 1/2 (no microphone yet): press-and-hold
-// anywhere on screen simulates blowing, and releasing just pauses (the held
-// bubble does not shrink or detach on its own). A tap that lands on a
-// floating bubble pops it. Detaching the held bubble is a separate upward
-// swipe gesture, decided by the caller from the reported drag deltas.
+// Touch pops floating bubbles and reports upward swipes to release them.
 export interface PointerBreathCallbacks {
   hitTestPop: (x: number, y: number) => boolean;
   onDown: () => void;

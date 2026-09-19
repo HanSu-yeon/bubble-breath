@@ -1,21 +1,28 @@
 // Central tuning values. Adjust these while testing instead of hard-coding
 // numbers elsewhere. See docs/03_Technical_Specs/00_DEVELOPMENT_PRINCIPLES.md.
 export const tuning = {
-  // fake breath input (Phase 1 dev input, replaced by mic in Phase 3)
-  breathRamp: 0.16, // exponential smoothing toward pressed target, per frame
+  // Microphone calibration and ambient-relative breath detection.
+  micCalibrationMs: 1200,
+  micNoiseFloor: 0.002, // numerical floor for otherwise silent input
+  micNoiseMultiplier: 1.6,
+  micFullStrengthLevel: 0.07,
+  micAttackMs: 90,
+  micResponseExponent: 0.65, // lift gentle breath without amplifying below-gate noise
 
-  // attached bubble growth (body). Growth only happens while actively
-  // blowing; pausing holds the current size — it never shrinks or
-  // auto-detaches on its own. Blowing again resumes growth from where it
-  // left off, so a bubble can be built up over several separate breaths.
+  // At release size, gentle breath lets the bubble fly; sustained strong breath bursts it.
   bubbleMinRadius: 22, // resting film radius ~= wand inner opening
   bubbleMaxRadius: 150,
-  growthRate: 120, // px/sec of target body radius growth at full breath strength
+  inflationSeconds: 2.5, // full-strength breath duration, independent of screen size
   radiusSmoothing: 0.22, // per-frame easing of rendered radius toward target
 
-  // detach gesture: swiping the held bubble upward releases it from the
-  // ring and flings it into a floating bubble. This is the only way a
-  // bubble detaches — breath stopping never does.
+  autoReleaseRatio: 0.68, // relative to the available screen space
+  autoReleaseHoldMs: 250, // brief pause before the smaller bubble lifts off
+  autoReleaseLift: 55,
+  burstBreathStrength: 0.72,
+  burstHoldMs: 400,
+  burstWobbleBoost: 3.5,
+
+  // Swiping upward can release a smaller bubble early.
   detachMinRadius: 30, // must have grown at least this much for a swipe to do anything
   swipeDetachThreshold: 34, // px of upward drag before it counts as a detach swipe
   swipeFlingMultiplier: 0.8, // fraction of drag speed that carries into the initial fling
@@ -33,16 +40,6 @@ export const tuning = {
   wobbleAmountAttached: 0.016,
   wobbleAmountFloating: 0.045,
   wobbleSpeed: 2.6,
-
-  // overinflate burst ("팡ㅋㅋ"): if you keep blowing after the body has
-  // already reached max size, there's a small per-second chance it bursts
-  // right there in the ring — a playful accident, not a punishment.
-  // Pausing at max size is always safe; only continuing to blow risks it.
-  overinflatePopChancePerSecond: 1.1, // ~0.9s average once at max size while still blowing
-  overinflateTensionRamp: 0.6, // seconds to reach full tension (max wobble) while overinflating
-  overinflateTensionRelax: 0.3, // seconds for tension to fade once you stop
-  overinflateWobbleBoost: 2.5, // extra wobble multiplier at full tension, as a warning tell
-  overinflateParticleCount: 16, // bigger burst than a normal pop
 
   // floating bubble motion. Fast enough that a freshly detached bubble
   // clears the wand area before the next one grows large, so they don't
