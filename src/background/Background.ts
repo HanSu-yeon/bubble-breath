@@ -213,7 +213,7 @@ function drawNoticeboard(ctx: CanvasRenderingContext2D, w: number, h: number, sk
   ctx.lineWidth = 1;
   for (const [icon, label, value, rowY] of [
     [fountainIcon, "무지개 분수", "18:00 — 04:00", 0.4],
-    [droneIcon, "별빛 드론쇼", "매시 35분", 0.68],
+    [droneIcon, "별빛 드론쇼", "18:00 — 04:00", 0.68],
   ] as const) {
     const iconCy = y + boardH * rowY;
     icon(ctx, x + boardW * 0.15, iconCy, boardH * 0.045);

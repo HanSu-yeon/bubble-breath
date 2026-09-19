@@ -1,5 +1,4 @@
 import { DRONE_SHOW_SECONDS } from "../background/droneThemes";
-import { droneSchedule } from "../background/droneSchedule";
 import { useEffect, useRef, useState } from "react";
 import { tuning } from "../config/tuning";
 import { BubbleManager } from "../bubble/BubbleManager";
@@ -74,8 +73,6 @@ export default function BubbleCanvas() {
 
     // Touch controls release and pop; growth comes from the microphone.
     let swipeConsumedThisGesture = false;
-    let hasStartedBlowing = false;
-    let introFadeStart: number | null = null;
     let hasShownPopHint = false;
     let popHint: { bubbleId: number; startTime: number } | null = null;
 
@@ -126,10 +123,6 @@ export default function BubbleCanvas() {
       const timeSec = now / 1000;
 
       const breathStrength = detector.sample(dtMs);
-      if (manager.attached.radius >= tuning.detachMinRadius && !hasStartedBlowing) {
-        hasStartedBlowing = true;
-        introFadeStart = now;
-      }
       manager.update(dtMs, breathStrength);
 
       const previewElapsed = previewOffset + (now - showStartedAt) / 1000;
@@ -153,18 +146,6 @@ export default function BubbleCanvas() {
       }
 
       drawParticles(ctx!, manager.particles);
-
-      const introY = height * 0.32; // clear sky, above the city silhouette
-      if (droneSchedule(hour).active) {
-        // Keep the center clear while the sky show is running.
-      } else if (introFadeStart === null) {
-        drawCenteredText(ctx!, "후— 불어봐", width / 2, introY, 1);
-      } else {
-        const t = (now - introFadeStart) / 400;
-        if (t < 1) {
-          drawCenteredText(ctx!, "후— 불어봐", width / 2, introY, 1 - t);
-        }
-      }
 
       if (popHint) {
         const b = manager.floating.find((fb) => fb.id === popHint!.bubbleId);
@@ -198,7 +179,7 @@ export default function BubbleCanvas() {
 
   const active = micStatus === "ready" || micStatus === "calibrating";
   return <>
-    <canvas ref={canvasRef} aria-label="마이크에 바람을 불면 커진 비눗방울이 저절로 날아가요. 터치해서 터뜨려 보세요. 무지개 분수는 매일 18시부터 다음날 4시까지, 드론쇼는 18시부터 23시까지 매시 35분에 2분 48초간 열려요." />
+    <canvas ref={canvasRef} aria-label="마이크에 바람을 불면 커진 비눗방울이 저절로 날아가요. 터치해서 터뜨려 보세요. 무지개 분수와 별빛 드론쇼 모두 매일 18시부터 다음날 4시까지 계속 이어져요." />
     <div className="microphone-controls">
       {!active && <p role="status" aria-live="polite">
         {micStatus === "error" ? micError
