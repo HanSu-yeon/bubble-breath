@@ -1,8 +1,13 @@
 import { droneThemeIndex, DRONE_SCENE_SECONDS, DRONE_FINALE_HOLD_SECONDS } from "./droneThemes";
 import { droneSchedule } from "./droneSchedule";
+import { isMobileViewport } from "../utils/device";
 
 type Dot = { x: number; y: number; color: number; group?: number };
-const COUNT = 420;
+// Phones redraw ~840+ blended sprites per frame for this alone; halving the
+// dot count keeps the formations readable while cutting that draw cost.
+const MOBILE = isMobileViewport();
+const COUNT = MOBILE ? 210 : 420;
+const CAPTION_STEP = MOBILE ? 8 : 5;
 const COLORS = ["#d6ffeb", "#b8caff", "#ffd49e", "#ffc4e5", "#b4f7f4", "#ffffff"];
 const hash = (i: number) => { const n = Math.sin(i * 127.1 + 91.7) * 43758.5453; return n - Math.floor(n); };
 const ease = (t: number) => { const v = Math.max(0, Math.min(1, t)); return v * v * (3 - 2 * v); };
@@ -329,7 +334,7 @@ function captionDots(text: string) {
   ctx.fillText(text, 320, 45, 610);
   const pixels = ctx.getImageData(0, 0, 640, 90).data;
   const dots: { x: number; y: number }[] = [];
-  for (let y = 4; y < 90; y += 5) for (let x = 4; x < 640; x += 5) {
+  for (let y = 4; y < 90; y += CAPTION_STEP) for (let x = 4; x < 640; x += CAPTION_STEP) {
     if (pixels[(y * 640 + x) * 4 + 3] > 100) dots.push({ x: (x - 320) / 640, y: (y - 45) / 640 });
   }
   captionCache.set(text, dots);

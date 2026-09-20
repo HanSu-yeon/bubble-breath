@@ -5,14 +5,14 @@ export const tuning = {
   micCalibrationMs: 1200,
   micNoiseFloor: 0.002, // numerical floor for otherwise silent input
   micNoiseMultiplier: 1.6,
-  micFullStrengthLevel: 0.07,
-  micAttackMs: 90,
-  micResponseExponent: 0.65, // lift gentle breath without amplifying below-gate noise
+  micFullStrengthLevel: 0.05, // lower = softer breath already reads as "full strength"
+  micAttackMs: 60, // lower = growth kicks in sooner after breath starts
+  micResponseExponent: 0.55, // lift gentle breath without amplifying below-gate noise
 
   // At release size, gentle breath lets the bubble fly; sustained strong breath bursts it.
   bubbleMinRadius: 22, // resting film radius ~= wand inner opening
   bubbleMaxRadius: 150,
-  inflationSeconds: 2.5, // full-strength breath duration, independent of screen size
+  inflationSeconds: 2.1, // full-strength breath duration, independent of screen size
   radiusSmoothing: 0.22, // per-frame easing of rendered radius toward target
 
   autoReleaseRatio: 0.68, // relative to the available screen space

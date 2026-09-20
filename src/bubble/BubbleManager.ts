@@ -2,7 +2,7 @@ import { tuning } from "../config/tuning";
 import { createAttachedBubble, detachToFloating, type BubbleInstance } from "./Bubble";
 import { spawnPopParticles, updateParticles, type PopParticle } from "../particles/PopParticles";
 
-const BREATH_ACTIVE_THRESHOLD = 0.08;
+const BREATH_ACTIVE_THRESHOLD = 0.05;
 
 export class BubbleManager {
   attached: BubbleInstance;

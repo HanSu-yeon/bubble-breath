@@ -13,6 +13,7 @@ import { defaultWandStyle, drawWand } from "../wand/Wand";
 import { attachPointerInput } from "../input/touch";
 import { currentHour } from "../background/skyTime";
 import { drawBackground } from "../background/Background";
+import { isMobileViewport } from "../utils/device";
 
 import { PopSound } from "../audio/popSound";
 import { BreathDetector, type MicrophoneStatus } from "../audio/breathDetector";
@@ -53,7 +54,9 @@ export default function BubbleCanvas() {
     function layout() {
       width = window.innerWidth;
       height = window.innerHeight;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      // Phones redraw the full canvas every frame; capping DPR lower there
+      // trims total pixel count without visibly softening the scene.
+      const dpr = Math.min(window.devicePixelRatio || 1, isMobileViewport() ? 1.5 : 2.5);
       canvas!.width = Math.round(width * dpr);
       canvas!.height = Math.round(height * dpr);
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
