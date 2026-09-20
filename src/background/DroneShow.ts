@@ -7,7 +7,7 @@ type Dot = { x: number; y: number; color: number; group?: number };
 // dot count keeps the formations readable while cutting that draw cost.
 const MOBILE = isMobileViewport();
 const COUNT = MOBILE ? 210 : 420;
-const CAPTION_STEP = MOBILE ? 8 : 5;
+const CAPTION_STEP = 5; // caption legibility matters more than the small draw-call savings here
 const COLORS = ["#d6ffeb", "#b8caff", "#ffd49e", "#ffc4e5", "#b4f7f4", "#ffffff"];
 const hash = (i: number) => { const n = Math.sin(i * 127.1 + 91.7) * 43758.5453; return n - Math.floor(n); };
 const ease = (t: number) => { const v = Math.max(0, Math.min(1, t)); return v * v * (3 - 2 * v); };
